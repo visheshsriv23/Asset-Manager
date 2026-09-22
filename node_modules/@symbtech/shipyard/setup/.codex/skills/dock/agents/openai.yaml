@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Dock"
+  short_description: "Scaffold an AI-facing project knowledge base"

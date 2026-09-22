@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@symbtech/shipyard": "^0.1.9"
+  }
+}

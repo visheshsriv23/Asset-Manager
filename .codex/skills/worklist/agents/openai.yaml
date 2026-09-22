@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Worklist"
+  short_description: "Turn an approved spec into a Tracer Bullet worklist, executed one slice at a time."

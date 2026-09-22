@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Scaffold"
+  short_description: "Interviews the user, selects the appropriate organization technology guide, and scaffolds a new software project according to the organization's standards."

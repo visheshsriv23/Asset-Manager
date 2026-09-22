@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Secure"
+  short_description: "Threat-model trust boundaries and harden code against OWASP-class vulnerabilities."

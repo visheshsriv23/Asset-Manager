@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shipyard Branch Review"
+  short_description: "Review a source branch against a target branch."
+  default_prompt: "Use $branch-review to review source branch <source> against target branch <target> and write a markdown report file."

@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Bughunt"
+  short_description: "Diagnose hard bugs and perf regressions with a red-loop discipline."

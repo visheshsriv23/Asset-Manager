@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shipyard Optimize Performance"
+  short_description: "Measure, fix, and verify a performance bottleneck."
+  default_prompt: "Use $optimize-performance to measure a baseline, find the real bottleneck, and fix it, re-measuring before keeping the change."

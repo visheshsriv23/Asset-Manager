@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Implement"
+  short_description: "Implement an approved worklist one tracer bullet at a time, with verification and human approval between each."

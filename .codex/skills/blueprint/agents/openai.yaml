@@ -1,0 +1,3 @@
+interface:
+  display_name: "Shipyard Blueprint"
+  short_description: "Turn a confirmed context into an implementation-ready spec."
