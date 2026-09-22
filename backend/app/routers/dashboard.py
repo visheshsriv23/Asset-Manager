@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
-
 from app.database import get_db
 from app.models import Asset, Employee, AssignmentHistory, User
 from app.routers.auth import get_current_user
@@ -49,8 +48,6 @@ def get_dashboard_stats(
         .scalar()
         or 0
     )
-
-    # Compile status breakdown
     by_status: List[StatusCount] = []
     status_display_items = [
         ("Ready to assign", status_map.get("Ready to assign", 0)),
@@ -159,7 +156,6 @@ def global_search(
 ):
     query_str = f"%{q.strip()}%"
 
-    # Search assets
     matched_assets = (
         db.query(Asset)
         .filter(
@@ -172,8 +168,6 @@ def global_search(
         .limit(5)
         .all()
     )
-
-    # Search employees
     matched_employees = (
         db.query(Employee)
         .filter(

@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status, UploadFile
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import Optional
-
 from app.database import get_db
 from app.models import Asset, User, AssignmentHistory,  Employee
 from app.routers.auth import get_current_user
@@ -69,7 +68,6 @@ def create_asset(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Check duplicate tag/serial
     if db.query(Asset).filter(Asset.tag == payload.tag.upper()).first():
         raise HTTPException(status_code=400, detail="Asset tag already exists.")
     if db.query(Asset).filter(Asset.serial_number == payload.serial_number.upper()).first():
@@ -97,7 +95,6 @@ def create_asset(
     db.add(new_asset)
     db.flush()
 
-    # Log initial creation & assignment history
     action_text = "Asset registered"
     action_text = "Asset registered"
     if payload.status == "Assigned" and holder_id:
