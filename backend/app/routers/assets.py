@@ -1,8 +1,14 @@
 import math
 import os
+import io
+import openpyxl
+import csv
+from datetime import datetime
+from openpyxl import Workbook
 import shutil
 import uuid
 from fastapi import APIRouter, Depends, Query, HTTPException, status, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import Optional
@@ -204,6 +210,69 @@ def update_asset_status(
     db.refresh(asset)
     return {"message": "Status updated successfully"}
 
+@router.post("/import/excel")
+async def import_assets_excel(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
+        raise HTTPException(status_code=400, detail="Only .xlsx or .xls files are supported")
+
+    content = await file.read()
+    wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True)
+    ws = wb.active
+
+    rows = list(ws.iter_rows(values_only=True))
+    if len(rows) < 2:
+        raise HTTPException(status_code=400, detail="Excel file is empty or missing data rows")
+
+    # Assuming headers match standard template
+    imported_count = 0
+    errors = []
+
+    for idx, row in enumerate(rows[1:], start=2):
+        if not row or not row[0]:  # Skip empty rows
+            continue
+
+        tag = str(row[0]).strip().upper()
+        asset_type = str(row[1]).strip() if row[1] else "Laptop"
+        make_model = str(row[2]).strip() if row[2] else "Standard Asset"
+        serial = str(row[3]).strip().upper() if row[3] else f"SN-{tag}"
+
+        # Avoid duplicates
+        if db.query(Asset).filter(Asset.tag == tag).first():
+            errors.append(f"Row {idx}: Tag {tag} already exists. Skipped.")
+            continue
+
+        new_asset = Asset(
+            tag=tag,
+            type=asset_type,
+            make_model=make_model,
+            serial_number=serial,
+            status=str(row[4]).strip() if row[4] else "Ready to assign",
+            condition=str(row[5]).strip() if row[5] else "Good",
+            location=str(row[6]).strip() if row[6] else "Bengaluru HQ",
+            vendor=str(row[8]).strip() if len(row) > 8 and row[8] else "Vendor",
+            invoice_number=str(row[9]).strip() if len(row) > 9 and row[9] else "N/A",
+            cost=float(row[10]) if len(row) > 10 and row[10] else 0.0,
+        )
+        db.add(new_asset)
+        db.flush()
+
+        # Audit history log
+        history_entry = AssignmentHistory(
+            asset_id=new_asset.id,
+            action="Bulk imported from Excel",
+            date=datetime.now(timezone.utc),
+            notes=f"Uploaded via spreadsheet by {current_user.name}",
+        )
+        db.add(history_entry)
+        imported_count += 1
+
+    db.commit()
+    return {"message": f"Successfully imported {imported_count} assets", "errors": errors}
+
 @router.post("/{asset_id}/reassign")
 def reassign_or_return_asset(
     asset_id: int,
@@ -327,3 +396,52 @@ def update_asset(
     db.commit()
     db.refresh(asset)
     return asset
+
+@router.get("/export/excel")
+def export_assets_excel(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    assets = db.query(Asset).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Assets Inventory"
+
+    # Header Row
+    headers = [
+        "Asset Tag", "Type", "Make & Model", "Serial Number",
+        "Status", "Condition", "Location", "Holder",
+        "Vendor", "Invoice No", "Cost", "Purchase Date", "Warranty Expiry"
+    ]
+    ws.append(headers)
+
+    # Data Rows
+    for a in assets:
+        holder_name = a.current_holder.name if a.current_holder else "Unassigned"
+        ws.append([
+            a.tag,
+            a.type,
+            a.make_model,
+            a.serial_number,
+            a.status,
+            a.condition,
+            a.location,
+            holder_name,
+            a.vendor,
+            a.invoice_number,
+            a.cost,
+            a.purchase_date.strftime("%Y-%m-%d") if a.purchase_date else "",
+            a.warranty_expiry.strftime("%Y-%m-%d") if a.warranty_expiry else "",
+        ])
+
+    file_stream = io.BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+
+    filename = f"asset_inventory_{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return StreamingResponse(
+        file_stream,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )

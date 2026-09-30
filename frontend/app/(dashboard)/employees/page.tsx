@@ -69,12 +69,12 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-16">
       {/* Top Header Row */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl px-5 font-bold tracking-tight text-slate-900">
             Employees
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5 font-normal">
+          <p className="text-xs px-5 text-slate-400 mt-0.5 font-normal">
             Directory and asset holdings
           </p>
         </div>

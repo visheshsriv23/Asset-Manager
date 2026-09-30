@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
+from collections import defaultdict
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 from app.database import get_db
@@ -42,9 +43,15 @@ def get_dashboard_stats(
     assigned = status_map.get("Assigned", 0)
     in_repair = status_map.get("In repair", 0)
     hardware_issue = status_map.get("Hardware issue", 0)
-    shipped_retired_count = (
+    shipped_count = (
         db.query(func.count(Asset.id))
-        .filter(Asset.status.in_(["Shipped to", "Retired", "Shipped"]))
+        .filter(Asset.status.in_(["Shipped", "Shipped to"]))
+        .scalar()
+        or 0
+    )
+    retired_count = (
+        db.query(func.count(Asset.id))
+        .filter(Asset.status == "Retired")
         .scalar()
         or 0
     )
@@ -54,7 +61,8 @@ def get_dashboard_stats(
         ("Assigned", status_map.get("Assigned", 0)),
         ("In repair", status_map.get("In repair", 0)),
         ("Hardware issue", status_map.get("Hardware issue", 0)),
-        ("Shipped/Retired", shipped_retired_count),
+        ("Shipped", shipped_count),
+        ("Retired", retired_count),
     ]
     for label, count in status_display_items:
         pct = round((count / total_assets) * 100, 1) if total_assets > 0 else 0.0
@@ -332,3 +340,54 @@ def get_dashboard_alerts(
         expiring_warranty=warranty_alerts,
         old_assets=old_alerts,
     )
+
+@router.get("/charts-data")
+def get_dashboard_charts_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    assets = db.query(Asset).all()
+    status_counts = defaultdict(int)
+    for a in assets:
+        status_counts[a.status] += 1
+
+    status_data = [
+        {"name": "Ready to assign", "value": status_counts.get("Ready to assign", 0), "color": "#10b981"},
+        {"name": "Assigned", "value": status_counts.get("Assigned", 0), "color": "#3b82f6"},
+        {"name": "In repair", "value": status_counts.get("In repair", 0), "color": "#f59e0b"},
+        {"name": "Hardware issue", "value": status_counts.get("Hardware issue", 0), "color": "#ef4444"},
+        {
+            "name": "Shipped",
+            "value": status_counts.get("Shipped", 0) + status_counts.get("Shipped to", 0),
+            "color": "#a855f7",
+        },
+        {
+            "name": "Retired",
+            "value": status_counts.get("Retired", 0),
+            "color": "#475569",
+        },
+    ]
+    now = datetime.now(timezone.utc)
+    months_map = {}
+    ordered_labels = []
+
+    for i in range(5, -1, -1):
+        month_dt = now - timedelta(days=i * 30)
+        label = month_dt.strftime("%b %y")
+        ordered_labels.append(label)
+        months_map[label] = {"month": label, "Laptop": 0, "Monitor": 0, "Phone": 0, "Other": 0}
+
+    for a in assets:
+        if a.purchase_date:
+            p_dt = a.purchase_date.replace(tzinfo=timezone.utc) if a.purchase_date.tzinfo is None else a.purchase_date
+            label = p_dt.strftime("%b %y")
+            if label in months_map:
+                t = a.type if a.type in ["Laptop", "Monitor", "Phone"] else "Other"
+                months_map[label][t] += 1
+
+    time_series_data = [months_map[lbl] for lbl in ordered_labels]
+
+    return {
+        "status_distribution": status_data,
+        "type_over_time": time_series_data,
+    }

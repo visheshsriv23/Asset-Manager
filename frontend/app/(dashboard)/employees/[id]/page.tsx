@@ -147,10 +147,10 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-16 relative">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">Employee</h1>
-          <p className="text-xs text-slate-400 mt-0.5 font-normal">Current and past assets</p>
+          <h1 className="text-xl px-5 font-bold tracking-tight text-slate-900">Employee</h1>
+          <p className="text-xs px-5 text-slate-400 mt-0.5 font-normal">Current and past assets</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -198,12 +198,12 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
           Assign an asset
         </button>
       </div>
-      <div className="space-y-3">
-        <h3 className="text-sm font-bold text-slate-900">Currently holding</h3>
-        <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
+      <div className="space-y-3 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs ">
+        <h3 className="text-sm font-bold p-5 text-slate-900 border-b border-slate-100 tracking-wider">Currently holding</h3>
+        <div>
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-white text-[11px] font-medium uppercase tracking-wider text-slate-400">
+              <tr className="border-b border-slate-100 text-[11px] font-medium uppercase tracking-wider text-slate-400">
                 <th className="py-3 px-5 font-normal">TAG</th>
                 <th className="py-3 px-5 font-normal">ASSET</th>
                 <th className="py-3 px-5 font-normal">SINCE</th>
@@ -255,9 +255,9 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
           </table>
         </div>
       </div>
-      <div className="space-y-3 pt-2">
-        <h3 className="text-sm font-bold text-slate-900">Past assets</h3>
-        <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
+      <div className="space-y-3 pt-2 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
+        <h3 className="text-sm font-bold text-slate-900 p-5 border-b border-slate-100">Past assets</h3>
+        <div >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-slate-100 bg-white text-[11px] font-medium uppercase tracking-wider text-slate-400">
@@ -312,9 +312,9 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
       {isAssignModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-[1px] p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
-            <div>
+            <div className="border-b border-slate-300 ">
               <h2 className="text-sm font-bold text-slate-900">Assign an asset</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 mb-4">
                 to {employee.name} · {employee.employee_id}
               </p>
             </div>

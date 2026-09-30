@@ -25,3 +25,5 @@ uvloop==0.22.1
 watchfiles==1.2.0
 websockets==17.1
 email-validator>=2.0.0
+openpyxl>=3.1.2
+python-multipart>=0.0.9

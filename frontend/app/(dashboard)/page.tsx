@@ -7,15 +7,54 @@ import { api } from "@/lib/api";
 import { DashboardStatsResponse, RecentActivityItem } from "@/types/dashboard";
 import GlobalSearch from "@/components/GlobalSearch";
 import DashboardAlerts from "@/components/DashboardAlerts";
+import DashboardCharts from "@/components/DashboardCharts";
 
-const STATUS_COLORS: Record<string, string> = {
-  "Ready to assign": "bg-[#10b981]",
-  Assigned: "bg-[#3b82f6]",
-  "In repair": "bg-[#f59e0b]",
-  "Hardware issue": "bg-[#ef4444]",
-  Shipped: "bg-[#a855f7]",
-  Retired: "bg-[#64748b]",
-  "Shipped/Retired": "bg-[#64748b]",
+const STATUS_BADGE_STYLES: Record<
+  string,
+  { bg: string; border: string; text: string; dot: string; bar: string }
+> = {
+  "Ready to assign": {
+    bg: "bg-emerald-50",
+    border: "border-emerald-200/80",
+    text: "text-emerald-700",
+    dot: "bg-emerald-500",
+    bar: "bg-[#008b7a]",
+  },
+  "Assigned": {
+    bg: "bg-blue-50",
+    border: "border-blue-200/80",
+    text: "text-blue-700",
+    dot: "bg-blue-500",
+    bar: "bg-blue-600",
+  },
+  "In repair": {
+    bg: "bg-amber-50",
+    border: "border-amber-200/80",
+    text: "text-amber-700",
+    dot: "bg-amber-500",
+    bar: "bg-amber-500",
+  },
+  "Hardware issue": {
+    bg: "bg-rose-50",
+    border: "border-rose-200/80",
+    text: "text-rose-700",
+    dot: "bg-rose-500",
+    bar: "bg-rose-500",
+  },
+  "Shipped": {
+    bg: "bg-purple-50",
+    border: "border-purple-200/80",
+    text: "text-purple-700",
+    dot: "bg-purple-500",
+    bar: "bg-purple-500",
+  },
+  "Retired": {
+    bg: "bg-slate-100",
+    border: "border-slate-200/80",
+    text: "text-slate-600",
+    dot: "bg-slate-400",
+    bar: "bg-slate-500",
+  },
 };
 
 export default function DashboardPage() {
@@ -23,16 +62,19 @@ export default function DashboardPage() {
   const [activity, setActivity] = useState<RecentActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState<any>(null);
+  const [chartsData, setChartsData] = useState<{ status_distribution: any[]; type_over_time: any[] } | null>(null);
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [statsRes, activityRes] = await Promise.all([
+        const [statsRes, activityRes, chartsRes] = await Promise.all([
           api.get<DashboardStatsResponse>("/api/dashboard/stats"),
           api.get<RecentActivityItem[]>("/api/dashboard/recent-activity"),
+          api.get("/api/dashboard/charts-data"),
         ]);
         setStats(statsRes.data);
         setActivity(activityRes.data);
+        setChartsData(chartsRes.data);
       } catch (err) {
         console.error("Failed to load dashboard data:", err);
       } finally {
@@ -64,14 +106,14 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-7 max-w-7xl mx-auto">
+    <div className="space-y-7 max-w-7xl mx-auto bg-white-700">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl px-5 font-bold tracking-tight text-slate-900">
             Dashboard
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-normal">
+          <p className="text-xs px-5 text-slate-500 mt-0.5 font-normal">
             Live view of the asset inventory
           </p>
         </div>
@@ -88,11 +130,12 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+      <hr className="border-slate-200" />
 
       {/* Top 5 Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* Ready to assign */}
-        <div className="flex h-36 flex-col justify-between rounded-xl bg-[#0e746b] p-4 text-white shadow-sm">
+        <div className="flex h-25 flex-col justify-between rounded-xl bg-[#0e746b] p-4 text-white shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-100">
             <span className="h-2 w-2 rounded-full bg-emerald-300" />
             Ready to assign
@@ -106,7 +149,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Assigned */}
-        <div className="flex h-36 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
+        <div className="flex h-25 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
             Assigned
@@ -116,11 +159,11 @@ export default function DashboardPage() {
               {stats?.assigned ?? 0}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-normal">in employees&apos; hands</p>
+          <p className="text-[11px] text-slate-500 font-normal">in employees&apos; hands</p>
         </div>
 
         {/* In repair */}
-        <div className="flex h-36 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
+        <div className="flex h-25 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span className="h-2 w-2 rounded-full bg-amber-500" />
             In repair
@@ -130,11 +173,11 @@ export default function DashboardPage() {
               {stats?.in_repair ?? 0}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-normal">out with vendors</p>
+          <p className="text-[11px] text-slate-500 font-normal">out with vendors</p>
         </div>
 
         {/* Hardware issue */}
-        <div className="flex h-36 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
+        <div className="flex h-25 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span className="h-2 w-2 rounded-full bg-red-500" />
             Hardware issue
@@ -144,11 +187,11 @@ export default function DashboardPage() {
               {stats?.hardware_issue ?? 0}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-normal">needs attention</p>
+          <p className="text-[11px] text-slate-500 font-normal">needs attention</p>
         </div>
 
         {/* Total assets */}
-        <div className="flex h-36 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
+        <div className="flex h-25 flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
             <span className="h-2 w-2 rounded-full bg-slate-400" />
             Total assets
@@ -158,7 +201,7 @@ export default function DashboardPage() {
               {stats?.total_assets ?? 0}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-normal">across all statuses</p>
+          <p className="text-[11px] text-slate-500 font-normal">across all statuses</p>
         </div>
       </div>
 
@@ -168,7 +211,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Assets by status */}
         <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5 border-b border-slate-300">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Assets by status
             </h2>
@@ -177,33 +220,59 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="space-y-4">
-            {stats?.by_status?.map((item, idx) => {
-              const dotColor = STATUS_COLORS[item.status] || "bg-slate-400";
+          <div className="space-y-3.5 pt-2 divide-y divide-slate-300">
+            {stats?.by_status?.map((item: any, idx: number) => {
+              const style = STATUS_BADGE_STYLES[item.status] || {
+                bg: "bg-slate-50",
+                border: "border-slate-200",
+                text: "text-slate-700",
+                dot: "bg-slate-400",
+                bar: "bg-slate-500",
+              };
+
               return (
-                <div key={item.status || `status-${idx}`} className="flex items-center gap-3 text-xs">
-                  <div className="flex items-center gap-2 w-28 text-slate-600 font-medium truncate">
-                    <span className={`h-2 w-2 rounded-full shrink-0 ${dotColor}`} />
-                    <span className="truncate">{item.status}</span>
+                <div
+                  key={item.status || idx}
+                  className="flex items-center justify-between gap-4 text-xs"
+                >
+                  {/* Pill Badge Container with border, tinted background, dot, and text */}
+                  <div className="w-36 shrink-0 mb-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-medium leading-none ${style.bg} ${style.border} ${style.text}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${style.dot}`} />
+                      <span className="truncate">{item.status}</span>
+                    </span>
                   </div>
-                  <div className="h-2 flex-1 rounded-full bg-[#edf2f7] overflow-hidden">
+
+                  {/* Progress Bar */}
+                  <div className="h-1.5 flex-1 rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-500 ${dotColor}`}
-                      style={{ width: `${item.percentage}%` }}
+                      className={`h-full rounded-full transition-all duration-500 ${style.bar}`}
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          ((item.count || 0) / (stats?.total_assets || 1)) * 100
+                        )}%`,
+                      }}
                     />
                   </div>
-                  <span className="w-8 text-right font-semibold text-slate-800">
+
+                  {/* Count */}
+                  <span className="w-6 text-right font-semibold text-slate-800">
                     {item.count}
-                  </span>
+                  </span>               
                 </div>
+
               );
-            })}
+              <hr className="border-slate-100" />
+            })}           
           </div>
         </div>
 
         {/* Available to assign, by type */}
         <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-5 border-b border-slate-300">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Available to assign, by type
             </h2>
@@ -212,7 +281,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4 divide-y divide-slate-300">
           {stats?.by_type?.map((item: any, idx: number) => {
             const typeName = item.asset_type || item.type || `Type ${idx + 1}`;
             return (
@@ -232,10 +301,10 @@ export default function DashboardPage() {
                     />
                 </div>
                 <div className="w-14 text-right">
-                    <p className="text-sm font-bold text-slate-800 leading-tight">
+                    <p className="text-sm font-bold text-[#0ea58e] leading-tight">
                     {item.available ?? 0}
                     </p>
-                    <p className="text-[10px] text-slate-400">available</p>
+                    <p className="text-[10px] text-slate-800">available</p>
                 </div>
                 </div>
             );
@@ -243,6 +312,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      {chartsData && (
+        <DashboardCharts
+          statusData={chartsData.status_distribution}
+          timelineData={chartsData.type_over_time}
+        />
+      )}
 
       {/* Recent Activity Table */}
       <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Search, Plus, Loader2, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, Loader2, Download, Upload, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import GlobalSearch from "@/components/GlobalSearch";
@@ -75,6 +75,9 @@ export default function AssetsPage() {
     const router = useRouter();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Filters & Search
   const [search, setSearch] = useState("");
@@ -122,6 +125,62 @@ export default function AssetsPage() {
     setPage(1);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const response = await api.get("/api/assets/export/excel", {
+        responseType: "blob", // Critical: tells Axios to treat response as binary file
+      });
+
+      // Create a virtual download link in the browser
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `assets_inventory_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err) {
+      console.error("Failed to export Excel:", err);
+      alert("Failed to export asset sheet. Please check backend logs.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // 2. Import Excel Handler
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setIsImporting(true);
+    try {
+      const res = await api.post("/api/assets/import/excel", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert(res.data.message || "Spreadsheet imported successfully!");
+      fetchAssets(); 
+    } catch (err: any) {
+      console.error("Import failed:", err);
+      alert(err.response?.data?.detail || "Failed to import Excel file.");
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const getStatusBadge = (st: string) => {
     switch (st) {
       case "Assigned":
@@ -164,17 +223,54 @@ export default function AssetsPage() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-12">
       {/* Top Header Row */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
+        <div className="mx-5">
           <h1 className="text-xl font-bold tracking-tight text-slate-900">
             Assets
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5 font-normal">
+          <p className="text-xs text-slate-500 mt-0.5 font-normal">
             Filter, search and drill in
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 mx-5">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx, .xls, .csv"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+
+        {/* Import Button */}
+        {/* <button
+          type="button"
+          disabled={isImporting}
+          onClick={() => fileInputRef.current?.click()}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition disabled:opacity-50 cursor-pointer"
+        >
+          {isImporting ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-700" />
+          ) : (
+            <Upload className="h-3.5 w-3.5 text-slate-500" />
+          )}
+          <span>Import Excel</span>
+        </button> */}
+
+        {/* Export Button */}
+        <button
+          type="button"
+          disabled={isExporting}
+          onClick={handleExport}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition disabled:opacity-50 cursor-pointer"
+        >
+          {isExporting ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-teal-700" />
+          ) : (
+            <Download className="h-3.5 w-3.5 text-slate-500" />
+          )}
+          <span>Export Excel</span>
+        </button>
           <Link
             href="/assets/new"
             className="flex items-center gap-1.5 rounded-lg bg-[#0e746b] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#0b5f58] transition"
@@ -197,9 +293,9 @@ export default function AssetsPage() {
               setPage(1);
             }}
             placeholder="Search by tag, model or serial..."
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3.5 pr-8 text-xs text-slate-700 placeholder:text-slate-400 outline-none focus:border-slate-300"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3.5 pr-8 text-xs text-slate-700 placeholder:text-slate-500 outline-none focus:border-slate-300"
           />
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
         </div>
 
         {/* Status Dropdown */}
@@ -261,7 +357,7 @@ export default function AssetsPage() {
 
         <button
           onClick={handleClearFilters}
-          className="text-xs text-slate-400 hover:text-slate-600 transition px-2 py-1"
+          className="text-xs underline text-slate-500 hover:text-slate-600 transition px-2 py-1"
         >
           Clear
         </button>
@@ -270,8 +366,8 @@ export default function AssetsPage() {
       {/* Main Asset Table */}
       <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
         <table className="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr className="border-b border-slate-100 bg-white text-[11px] font-medium uppercase tracking-wider text-slate-400">
+          <thead >
+            <tr className="border-b border-slate-100 bg-gray-100 text-[11px] font-medium uppercase tracking-wider text-gray-500">
               <th className="py-3 px-5 font-normal">TAG</th>
               <th className="py-3 px-5 font-normal">ASSET</th>
               <th className="py-3 px-5 font-normal">SERIAL</th>
@@ -304,7 +400,7 @@ export default function AssetsPage() {
                     onClick={() => router.push(`/assets/${asset.id}`)}
                     className="hover:bg-slate-50/60 transition cursor-pointer"
                   >
-                    <td className="py-4 px-5 font-mono text-[11px] text-slate-500 whitespace-nowrap">
+                    <td className="py-4 px-5 font-mono text-[11px] text-teal-700 whitespace-nowrap">
                       {asset.tag}
                     </td>
                     <td className="py-4 px-5">
