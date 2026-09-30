@@ -106,7 +106,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="space-y-7 max-w-7xl mx-auto bg-white-700">
+    <div className="space-y-7 max-w-7xl mx-auto bg-white-700 mb-10">
       {/* Header */}
       <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
         <div>
@@ -326,9 +326,6 @@ export default function DashboardPage() {
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Recent activity
             </h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">
-              Latest assignments, returns, and status updates
-            </p>
           </div>
           <Link
             href="/history"
@@ -341,51 +338,8 @@ export default function DashboardPage() {
         <div className="divide-y divide-slate-100">
           {(activity && activity.length > 0
             ? activity
-            : [
-                {
-                  id: 1,
-                  tag: "AB-LT-030",
-                  model: "MacBook Air M2",
-                  action: "marked",
-                  target: "Ready to assign",
-                  time: "Today · 10:24",
-                  dotColor: "bg-emerald-500",
-                },
-                {
-                  id: 2,
-                  tag: "AB-LT-014",
-                  action: "assigned to",
-                  target: "Aarav Mehta",
-                  time: "Today · 09:12",
-                  dotColor: "bg-blue-500",
-                },
-                {
-                  id: 3,
-                  tag: "AB-LT-009",
-                  action: "sent to repair — vendor",
-                  target: "TechCare",
-                  time: "Yesterday · 16:40",
-                  dotColor: "bg-amber-500",
-                },
-                {
-                  id: 4,
-                  tag: "AB-LT-018",
-                  action: "shipped to",
-                  target: "Pune office",
-                  time: "12 Sep · 11:05",
-                  dotColor: "bg-purple-500",
-                },
-                {
-                  id: 5,
-                  tag: "AB-MN-012",
-                  action: "returned by V. Rao, reassigned to",
-                  target: "Sara Khan",
-                  time: "11 Sep · 14:30",
-                  dotColor: "bg-blue-500",
-                },
-              ]
+            : []
           ).map((item: any, idx: number) => {
-            // Determine bullet dot color from action or status
             const act = (item.action || "").toLowerCase();
             let dot = "bg-slate-400";
             if (act.includes("ready")) dot = "bg-emerald-500";

@@ -57,7 +57,7 @@ export default function DashboardLayout({
     <div className="flex h-screen w-screen overflow-hidden bg-[#f4f6f8] text-slate-800 antialiased">
       {/* 1. Left Sidebar: Fixed width, full screen height, dark */}
       <aside className="w-64 flex-shrink-0 h-screen bg-[#0e1e24] flex flex-col justify-between z-30 select-none">
-        <div>
+        <div className="ml-4 mr-2 mt-3">
           {/* Logo Header */}
           <div className="flex items-center gap-3 px-2 pt-2">
           <div className="h-9 w-9 rounded-lg bg-[#008b7a] flex items-center justify-center text-white shadow-xs">
@@ -73,7 +73,7 @@ export default function DashboardLayout({
 
           {/* Manage Navigation */}
           <div>
-          <p className="px-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#526f7a]">
+          <p className="px-2 mb-3 mt-10 text-[11px] font-bold uppercase tracking-wider text-[#526f7a]">
             MANAGE
           </p>
           <nav className="space-y-1">
@@ -100,7 +100,7 @@ export default function DashboardLayout({
 
           {/* Actions */}
           <div>
-          <p className="px-2 mb-2 text-[11px] font-bold uppercase tracking-wider text-[#526f7a]">
+          <p className="px-2 mb-2 mt-3 text-[11px] font-bold uppercase tracking-wider text-[#526f7a]">
             ACTIONS
           </p>
           <Link
@@ -116,10 +116,10 @@ export default function DashboardLayout({
         {/* User Badge */}
         <div className="pt-4 border-t border-[#1a2d35] flex items-center justify-between px-2">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-md bg-[#008b7a] flex items-center justify-center font-bold text-xs text-white">
+          <div className="h-8 w-8 rounded-md bg-[#008b7a] flex items-center justify-center mb-5 font-bold text-xs text-white">
             OP
           </div>
-          <div className="overflow-hidden">
+          <div className="overflow-hidden mb-5">
             <p className="text-xs font-semibold text-white leading-tight truncate">Ops Admin</p>
             <p className="text-[10px] text-[#63828e] truncate">ops@abmtech.com</p>
           </div>
@@ -127,7 +127,7 @@ export default function DashboardLayout({
         <button
           onClick={handleLogout}
           title="Logout"
-          className="text-slate-400 hover:text-rose-400 p-1.5 rounded-md hover:bg-[#142329] transition cursor-pointer"
+          className="text-slate-400 hover:text-rose-400 p-1.5 rounded-md hover:bg-[#142329] transition cursor-pointer mb-5"
         >
           <LogOut className="h-4 w-4" />
         </button>
