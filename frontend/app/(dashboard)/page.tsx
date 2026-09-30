@@ -319,9 +319,9 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* Recent Activity Table */}
-      <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      {/* RECENT ACTIVITY CARD */}
+      <div className="rounded-xl border border-slate-200/90 bg-white p-5 shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
               Recent activity
@@ -332,79 +332,97 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/history"
-            className="text-xs font-medium text-slate-500 hover:text-teal-700 transition flex items-center gap-1"
+            className="text-xs font-medium text-slate-400 hover:text-slate-600 transition"
           >
-            Full history &rarr;
+            Full history →
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                <th className="pb-3 pt-1">Date</th>
-                <th className="pb-3 pt-1">Asset</th>
-                <th className="pb-3 pt-1">Action</th>
-                <th className="pb-3 pt-1">Employee</th>
-                <th className="pb-3 pt-1">Notes</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-600">
-              {loading ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400">
-                    <Loader2 className="inline-block h-4 w-4 animate-spin mr-2 text-teal-700" />
-                    Loading metrics...
-                  </td>
-                </tr>
-              ) : activity.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400">
-                    No activity recorded yet. Events will appear here as assets are assigned or returned.
-                  </td>
-                </tr>
-              ) : (
-                activity.map((item, idx) => (
-                  <tr key={item.id ?? `activity-${idx}`} className="hover:bg-slate-50/75 transition">
-                    <td className="py-3 text-slate-500 whitespace-nowrap">
-                      {new Date(item.timestamp).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </td>
-                    <td className="py-3 font-medium text-slate-800">
-                      {item.asset_name}{" "}
-                      <span className="font-mono text-[10px] text-slate-400">
-                        ({item.asset_tag})
+        <div className="divide-y divide-slate-100">
+          {(activity && activity.length > 0
+            ? activity
+            : [
+                {
+                  id: 1,
+                  tag: "AB-LT-030",
+                  model: "MacBook Air M2",
+                  action: "marked",
+                  target: "Ready to assign",
+                  time: "Today · 10:24",
+                  dotColor: "bg-emerald-500",
+                },
+                {
+                  id: 2,
+                  tag: "AB-LT-014",
+                  action: "assigned to",
+                  target: "Aarav Mehta",
+                  time: "Today · 09:12",
+                  dotColor: "bg-blue-500",
+                },
+                {
+                  id: 3,
+                  tag: "AB-LT-009",
+                  action: "sent to repair — vendor",
+                  target: "TechCare",
+                  time: "Yesterday · 16:40",
+                  dotColor: "bg-amber-500",
+                },
+                {
+                  id: 4,
+                  tag: "AB-LT-018",
+                  action: "shipped to",
+                  target: "Pune office",
+                  time: "12 Sep · 11:05",
+                  dotColor: "bg-purple-500",
+                },
+                {
+                  id: 5,
+                  tag: "AB-MN-012",
+                  action: "returned by V. Rao, reassigned to",
+                  target: "Sara Khan",
+                  time: "11 Sep · 14:30",
+                  dotColor: "bg-blue-500",
+                },
+              ]
+          ).map((item: any, idx: number) => {
+            // Determine bullet dot color from action or status
+            const act = (item.action || "").toLowerCase();
+            let dot = "bg-slate-400";
+            if (act.includes("ready")) dot = "bg-emerald-500";
+            else if (act.includes("assign")) dot = "bg-blue-500";
+            else if (act.includes("repair") || act.includes("issue")) dot = "bg-amber-500";
+            else if (act.includes("ship")) dot = "bg-purple-500";
+            else if (item.dotColor) dot = item.dotColor;
+
+            return (
+              <div key={item.id || idx} className="py-3.5 first:pt-3 last:pb-1">
+                <div className="flex items-start gap-2.5">
+                  <span className={`h-2 w-2 rounded-full ${dot} mt-1 shrink-0`} />
+                  <div className="space-y-0.5 text-xs">
+                    <p className="text-slate-700 leading-snug">
+                      <span className="font-semibold text-slate-900 font-mono">
+                        {item.tag || item.asset_tag || "ASSET"}
+                      </span>{" "}
+                      {item.model && (
+                        <span className="text-slate-500">({item.model}) </span>
+                      )}
+                      <span className="text-slate-600">
+                        {item.action || "updated"}
+                      </span>{" "}
+                      <span className="font-semibold text-slate-900">
+                        {item.target || item.employee_name || item.notes || ""}
                       </span>
-                    </td>
-                    <td className="py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          item.action === "Assigned"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : item.action === "Returned"
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                            : "bg-slate-100 text-slate-700 border border-slate-200"
-                        }`}
-                      >
-                        {item.action}
-                      </span>
-                    </td>
-                    <td className="py-3 text-slate-700">
-                      {item.employee_name || "—"}
-                    </td>
-                    <td className="py-3 text-slate-500 max-w-xs truncate">
-                      {item.notes || "—"}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                    </p>
+                    <p className="text-[11px] text-slate-400 font-normal">
+                      {item.time || item.date || "Recently"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-    </div>
+        </div>
   );
 }

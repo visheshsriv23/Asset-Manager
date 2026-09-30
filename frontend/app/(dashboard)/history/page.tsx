@@ -92,25 +92,29 @@ export default function HistoryLogPage() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto pb-16">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="sticky top-0 z-20 flex py-4 -mx-5 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-white">
         <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-xl px-5 font-bold tracking-tight text-slate-900">
               Audit & Activity Log
             </h1>
-            <p className="text-xs text-slate-400 mt-0.5 font-normal">
+            <p className="text-xs px-5 text-slate-400 mt-0.5 font-normal">
               Complete chronological audit trail across all hardware and employees
             </p>
           </div>
         </div>
         <GlobalSearch />
       </div>
+        {/* Back Link */}
+        <div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 transition"
+          >
+            <ArrowLeft className="h-3 w-3" />
+            <span>Back to Dashboard</span>
+          </Link>
+        </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative min-w-[280px] flex-1 max-w-md">
           <input
@@ -147,7 +151,7 @@ export default function HistoryLogPage() {
       <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-xs">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-slate-100 bg-white text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            <tr className="border-b border-slate-100 bg-gray-100 text-[11px] font-medium uppercase tracking-wider text-slate-400">
               <th className="py-3 px-5 font-normal">TIMESTAMP</th>
               <th className="py-3 px-5 font-normal">ASSET</th>
               <th className="py-3 px-5 font-normal">ACTION / EVENT</th>
