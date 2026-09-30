@@ -3,13 +3,18 @@ annotated-types==0.8.0
 anyio==4.15.1
 bcrypt==4.0.1
 click==8.5.0
+dnspython==2.8.0
+email-validator==2.3.0
+et_xmlfile==2.0.0
 fastapi==0.141.1
-gunicorn>=21.2.0
 greenlet==3.5.6
+gunicorn==26.2.0
 h11==0.16.0
 httptools==0.8.0
 idna==3.19
+openpyxl==3.1.5
 passlib==1.7.4
+psycopg2-binary==2.9.13
 pydantic==2.13.5
 pydantic_core==2.46.5
 PyJWT==2.14.0
@@ -24,6 +29,3 @@ uvicorn==0.53.0
 uvloop==0.22.1
 watchfiles==1.2.0
 websockets==17.1
-email-validator>=2.0.0
-openpyxl>=3.1.2
-python-multipart>=0.0.9

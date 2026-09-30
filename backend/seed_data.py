@@ -1,17 +1,17 @@
 from datetime import datetime, timezone
-from app.database import SessionLocal
+from app.database import SessionLocal, Base, engine
 from app.models import Asset, Employee, AssignmentHistory
+
+Base.metadata.create_all(bind=engine)
 
 db = SessionLocal()
 
 try:
-    # 1. Clear existing data
     db.query(AssignmentHistory).delete()
     db.query(Asset).delete()
     db.query(Employee).delete()
     db.commit()
 
-    # 2. Add Employees
     employees = [
         Employee(
             employee_id="EMP-104",
