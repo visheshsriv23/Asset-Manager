@@ -617,7 +617,7 @@ export default function AssetDetailPage({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  {/* <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" /> */}
                 </div>
               </div>
 
